@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>لعبة سليمان هوتيل</title>
+<style>
+:root{--bg:#0d141b;--panel:#142132;--panel2:#172331;--line:#ffffff22;--gold:#f5c65b;--green:#5fc488;--red:#d95f59;--text:#f7f4ee}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:linear-gradient(135deg,#0d141b,#142333 55%,#182019);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Arabic","Geeza Pro",Tahoma,sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0;border-radius:12px;background:#203247;color:#fff;padding:10px 16px}
+button:hover{filter:brightness(1.08)}
+.app{width:min(1400px,96vw);margin:auto;padding:22px 0}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.top h1{font-size:46px;margin:0;color:var(--gold)}
+.top p{margin:8px 0 0;color:#d7d0c4}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.gold{background:linear-gradient(135deg,#f5c65b,#d79f35);color:#1d1608;font-weight:900}
+.danger{background:#70302f}
+.scores{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;margin:20px 0}
+.team,.mid{background:var(--panel2);border:1px solid var(--line);border-radius:18px;padding:18px}
+.team{display:grid;grid-template-columns:1fr auto;gap:10px}
+.name{font-size:30px;font-weight:900}
+.score{font-size:64px;color:var(--gold);font-weight:950}
+.tools{grid-column:1/-1;display:flex;gap:8px}
+.mid{min-width:230px;text-align:center}
+.mid h2{font-size:42px;margin:8px 0;color:var(--gold)}
+.board{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.cat{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#ffffff12}
+.cat-title{min-height:72px;display:grid;place-items:center;text-align:center;font-size:22px;font-weight:900;background:#f5c65b33;padding:8px}
+.qs{display:grid;gap:8px;padding:10px}
+.q{height:76px;color:var(--gold);font-size:38px;font-weight:950;background:var(--panel2);border:1px solid #f5c65b33}
+.q.used{color:#ffffff33;background:#ffffff0a;text-decoration:line-through}
+.setup,.modal,.winner,.online-modal{position:fixed;inset:0;background:#05090ddd;display:grid;place-items:center;padding:20px;z-index:10}
+.modal,.winner,.online-modal{display:none}
+.show{display:grid}
+.card,.qcard,.wcard{width:min(960px,96vw);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 24px 70px #0008}
+.setup .card{max-height:92vh;overflow:auto}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.check{display:flex;gap:10px;align-items:center;justify-content:space-between;background:#ffffff12;padding:12px;border-radius:12px;min-width:0}
+.check input{width:28px;height:28px;flex:0 0 28px}
+.check span{overflow-wrap:anywhere}
+.online-check{margin-top:14px;justify-content:flex-start}
+input,select{height:46px;border-radius:12px;border:1px solid var(--line);background:#ffffff12;color:#fff;padding:0 12px;width:100%}
+option{background:#142132}
+.qcard{min-height:650px;display:flex;flex-direction:column;gap:16px}
+.meta{display:flex;justify-content:space-between;color:var(--gold);font-size:22px;font-weight:900}
+.media{display:none;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#05090d}
+.media.show{display:block}
+.media iframe{display:block;width:100%;height:min(260px,34vh);border:0}
+.media a{display:block;color:var(--gold);text-align:center;padding:10px;text-decoration:none;background:#ffffff10}
+.qt{flex:1;display:grid;place-items:center;text-align:center;font-size:50px;font-weight:950;line-height:1.35;min-height:170px}
+.answer{display:none;background:#5fc48822;border:1px solid #5fc48877;border-radius:16px;padding:18px;text-align:center;font-size:26px}
+.answer.show{display:block}
+.timer{height:10px;background:#ffffff22;border-radius:99px;overflow:hidden}
+.timer div{height:100%;background:linear-gradient(90deg,var(--green),var(--gold),var(--red));transform-origin:right}
+.award,.modal-actions{display:flex;gap:10px;flex-wrap:wrap}
+.award button{flex:1;min-width:180px}
+.online-row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:14px}
+.online-row label{flex:1;min-width:220px}
+.online-code{font-size:34px;font-weight:950;color:var(--gold);letter-spacing:2px;margin:10px 0}
+.online-note{color:#d7d0c4;line-height:1.7}
+.status-pill{display:inline-flex;align-items:center;gap:8px;background:#ffffff12;border:1px solid var(--line);border-radius:999px;padding:8px 12px;margin-top:12px}
+.status-dot{width:10px;height:10px;border-radius:50%;background:#d95f59}
+.status-dot.on{background:#5fc488}
+.wcard{text-align:center}
+.wcard h2{color:var(--gold);font-size:46px}
+.wname{font-size:70px;font-weight:950}
+@media(max-width:1100px){.picker{grid-template-columns:1fr 1fr}}
+@media(max-width:900px){.scores{grid-template-columns:1fr}.board{grid-template-columns:repeat(2,1fr)!important}.grid,.picker{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}.top h1{font-size:36px}.qt{font-size:34px}.score{font-size:48px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div>
+      <h1>لعبة سليمان هوتيل</h1>
+      <p>أسئلة تتبدل كل مرة، مع مقاطع يوتيوب للأغاني والفنانين</p>
+    </div>
+    <div class="actions">
+      <button id="setupBtn">الإعدادات</button>
+      <button id="onlineBtn">اللعب أونلاين</button>
+      <button id="refreshBtn">أسئلة جديدة</button>
+      <button id="winnerBtn">إعلان الفائز</button>
+      <button class="danger" id="resetBtn">لعبة جديدة</button>
+    </div>
+  </header>
+  <section class="scores">
+    <article class="team">
+      <div class="name" id="teamAName"></div>
+      <div class="score" id="teamAScore"></div>
+      <div class="tools"><button data-score="a" data-delta="100">+100</button><button data-score="a" data-delta="-100">-100</button></div>
+    </article>
+    <article class="mid">
+      <div>الأسئلة المتبقية</div>
+      <h2 id="remainingCount"></h2>
+      <div id="gameStatus"></div>
+    </article>
+    <article class="team">
+      <div class="name" id="teamBName"></div>
+      <div class="score" id="teamBScore"></div>
+      <div class="tools"><button data-score="b" data-delta="100">+100</button><button data-score="b" data-delta="-100">-100</button></div>
+    </article>
+  </section>
+  <section id="board" class="board"></section>
+</main>
+
+<section id="setup" class="setup">
+  <div class="card">
+    <h2>إعداد اللعبة</h2>
+    <div class="grid">
+      <label>الفريق الأول<input id="teamAInput" value="الفريق الأول"></label>
+      <label>الفريق الثاني<input id="teamBInput" value="الفريق الثاني"></label>
+      <label>مدة السؤال<input id="secondsInput" type="number" value="45"></label>
+      <label>عدد التصنيفات<select id="categoryCount"><option>6</option><option>5</option><option>4</option></select></label>
+    </div>
+    <label class="check online-check"><input id="onlineInput" type="checkbox" checked><span>استخدم أسئلة الإنترنت عند بدء اللعبة</span></label>
+    <div id="categoryPicker" class="picker"></div>
+    <button class="gold" id="startBtn">ابدأ اللعبة</button>
+  </div>
+</section>
+
+<section id="questionModal" class="modal">
+  <article class="qcard">
+    <div class="meta"><span id="modalCategory"></span><span id="modalPoints"></span></div>
+    <div class="timer"><div id="timerBar"></div></div>
+    <div id="mediaBox" class="media"></div>
+    <div id="modalQuestion" class="qt"></div>
+    <div id="answerBox" class="answer"></div>
+    <div class="modal-actions">
+      <button id="showAnswerBtn">إظهار الإجابة</button>
+      <button id="pauseTimerBtn">إيقاف المؤقت</button>
+      <button id="closeQuestionBtn">إغلاق بدون نقاط</button>
+    </div>
+    <div class="award"><button id="awardA"></button><button id="awardB"></button></div>
+  </article>
+</section>
+
+<section id="winnerModal" class="winner">
+  <div class="wcard">
+    <h2>الفائز</h2>
+    <div id="winnerName" class="wname"></div>
+    <p id="winnerScore"></p>
+    <button class="gold" id="closeWinnerBtn">رجوع</button>
+  </div>
+</section>
+
+<section id="onlineModal" class="online-modal">
+  <div class="card">
+    <h2>اللعب أونلاين</h2>
+    <p class="online-note">أنشئ غرفة وارسل الرابط مع الكود للشخص الثاني. إذا دخل بالكود نفسه، تتزامن اللوحة والنقاط بينكم.</p>
+    <div class="online-row">
+      <button class="gold" id="createRoomBtn">إنشاء غرفة</button>
+      <label>كود الغرفة<input id="roomInput" placeholder="مثال: 482913"></label>
+      <button id="joinRoomBtn">دخول الغرفة</button>
+    </div>
+    <div id="roomCode" class="online-code"></div>
+    <div class="status-pill"><span id="onlineDot" class="status-dot"></span><span id="onlineStatusText">غير متصل</span></div>
+    <p class="online-note">ملاحظة: رابط الملف المحلي لا يعمل عند الشخص الثاني. بعد التجربة نرفعه على GitHub Pages أو Netlify ليصير له رابط عام.</p>
+    <div class="modal-actions" style="margin-top:18px"><button id="closeOnlineBtn">رجوع</button></div>
+  </div>
+</section>
+
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const values=[100,200,300,400,500];
+const onlineHint="يعتمد مقطع يوتيوب على اتصال الإنترنت، وإذا لم يظهر افتحه من الرابط الموجود تحت المقطع.";
+const pointDifficulties=["hard","hard","hard","hard","hard"];
+const onlineCategoryIds={"أدب":10,"تاريخ":23,"رياضة":21,"أغاني":12,"مغنين":12};
+const onlineStatus={used:0,total:0,failed:false};
+const pools={
+  "أغاني":[
+    {q:"اسمع المقطع وحدد اسم الأغنية كاملًا مع الفنان.",a:"الأماكن - محمد عبده",youtube:"محمد عبده الأماكن"},
+    {q:"اسمع المقطع وحدد الفنان من خامة الصوت فقط.",a:"عبدالكريم عبدالقادر",youtube:"عبدالكريم عبدالقادر مستحيل أنساك"},
+    {q:"اسمع المقطع وحدد اسم العمل الغنائي.",a:"أنا وليلى - كاظم الساهر",youtube:"كاظم الساهر أنا وليلى"},
+    {q:"اسمع المقطع وحدد الفنان واسم الأغنية.",a:"سكة طويلة - عبدالله الرويشد",youtube:"عبدالله الرويشد سكة طويلة"},
+    {q:"اسمع المقطع وحدد اسم الأغنية والفنان.",a:"يا غايب - فضل شاكر",youtube:"فضل شاكر يا غايب"},
+    {q:"اسمع المقطع وحدد الفنانة الخليجية.",a:"نوال الكويتية",youtube:"نوال الكويتية يا مصبر الموعود"},
+    {q:"اسمع المقطع وحدد الأغنية مع الفنان.",a:"الأول - راشد الماجد",youtube:"راشد الماجد الأول"},
+    {q:"اسمع المقطع وحدد الفنان من دون الاعتماد على اسم الفيديو.",a:"حسين الجسمي",youtube:"حسين الجسمي بشرة خير"},
+    {q:"اسمع المقطع: أي مدرسة غنائية سعودية ارتبطت بهذا اللون؟",a:"مدرسة طلال مداح",youtube:"طلال مداح مقادير"},
+    {q:"اسمع المقطع: اذكر اسم الأغنية القديمة والفنان.",a:"الصوت الجريح - عبدالكريم عبدالقادر",youtube:"عبدالكريم عبدالقادر الصوت الجريح"}
+  ],
+  "مغنين":[
+    {q:"أي فنان سعودي لُقّب بفنان العرب؟",a:"محمد عبده"},
+    {q:"أي فنانة كويتية تُعرف بقيثارة الخليج؟",a:"نوال الكويتية"},
+    {q:"أي فنان إماراتي ارتبطت شهرته عربيًا بأغنية بشرة خير؟",a:"حسين الجسمي"},
+    {q:"أي فنان كويتي ارتبط بلقب الصوت الجريح؟",a:"عبدالكريم عبدالقادر"},
+    {q:"من الفنان الجزائري الذي اشتهر عالميًا بأغنية عبدالقادر؟",a:"الشاب خالد"},
+    {q:"من الفنان الحضرمي صاحب أغنية يا بلادي واصلي؟",a:"أبو بكر سالم"},
+    {q:"من الفنان السعودي المرتبط بأغنية مقادير؟",a:"طلال مداح"},
+    {q:"من الفنان العراقي الذي لُقّب بقيصر الغناء العربي؟",a:"كاظم الساهر"},
+    {q:"أي مطرب كويتي ارتبط بأغاني وطنية وعاطفية مثل سكة طويلة؟",a:"عبدالله الرويشد"},
+    {q:"من المطرب اللبناني صاحب أغنية يا غايب؟",a:"فضل شاكر"}
+  ],
+  "أدب":[
+    {q:"من صاحب رواية موسم الهجرة إلى الشمال؟",a:"الطيب صالح"},
+    {q:"من صاحب رواية رجال في الشمس؟",a:"غسان كنفاني"},
+    {q:"من كتب حي بن يقظان؟",a:"ابن طفيل"},
+    {q:"ما المصطلح النقدي الذي يعني حضور نص داخل نص آخر؟",a:"التناص"},
+    {q:"من صاحب كتاب الحيوان في التراث العربي؟",a:"الجاحظ"},
+    {q:"من كتب رسالة الغفران؟",a:"أبو العلاء المعري"},
+    {q:"ما المدرسة الأدبية التي ارتبطت بجبران ونعيمة في المهجر؟",a:"مدرسة المهجر"},
+    {q:"من صاحب رواية مدن الملح؟",a:"عبد الرحمن منيف"},
+    {q:"ما الفن النثري العباسي الذي اشتهر به بديع الزمان الهمذاني؟",a:"المقامات"},
+    {q:"من صاحب كتاب طبائع الاستبداد؟",a:"عبد الرحمن الكواكبي"}
+  ],
+  "تاريخ":[
+    {q:"ما المعاهدة التي أنهت الحرب العالمية الأولى رسميًا؟",a:"معاهدة فرساي"},
+    {q:"أي حضارة قديمة ارتبطت بالكتابة المسمارية؟",a:"الحضارة السومرية"},
+    {q:"ما اسم الطريق التجاري التاريخي الذي ربط الصين بالبحر المتوسط؟",a:"طريق الحرير"},
+    {q:"ما عاصمة الدولة العباسية في عصرها الذهبي؟",a:"بغداد"},
+    {q:"أي سلطان عثماني فتح القسطنطينية سنة 1453؟",a:"محمد الفاتح"},
+    {q:"ما الدولة التي قادت مشروع قناة السويس في القرن التاسع عشر؟",a:"فرنسا"},
+    {q:"ما اسم الاتفاقية السرية سنة 1916 لتقسيم مناطق نفوذ في المشرق العربي؟",a:"سايكس بيكو"},
+    {q:"ما المدينة التي كانت عاصمة الأندلس الأموية؟",a:"قرطبة"},
+    {q:"ما اسم المعركة التي أوقفت تمدد المغول في الشام سنة 1260؟",a:"عين جالوت"},
+    {q:"ما اسم آخر خلفاء الدولة العباسية في بغداد؟",a:"المستعصم بالله"}
+  ],
+  "قصص الأنبياء":[
+    {q:"من النبي الذي أُرسل إلى أهل مدين؟",a:"شعيب عليه السلام"},
+    {q:"من النبي الذي آتاه الله الزبور؟",a:"داود عليه السلام"},
+    {q:"من النبي الذي سخر الله له الريح؟",a:"سليمان عليه السلام"},
+    {q:"من النبي الذي قال: رب إني مسني الضر وأنت أرحم الراحمين؟",a:"أيوب عليه السلام"},
+    {q:"من النبي الذي طلب من ربه أن يريه كيف يحيي الموتى؟",a:"إبراهيم عليه السلام"},
+    {q:"من النبي الذي ذكر القرآن أنه كان رسولًا نبيًا وكان يأمر أهله بالصلاة والزكاة؟",a:"إسماعيل عليه السلام"},
+    {q:"من النبي الذي دعا قومه ألف سنة إلا خمسين عامًا؟",a:"نوح عليه السلام"},
+    {q:"من النبي الذي كان تأويل الرؤى جزءًا بارزًا من قصته؟",a:"يوسف عليه السلام"},
+    {q:"من النبي الذي كفل مريم عليها السلام؟",a:"زكريا عليه السلام"},
+    {q:"من النبي الذي قيل له: اضرب بعصاك البحر؟",a:"موسى عليه السلام"}
+  ],
+  "رياضة":[
+    {q:"في التنس، ما الكلمة الإنجليزية المستخدمة لنتيجة صفر؟",a:"Love"},
+    {q:"في كرة السلة، كم ثانية يملك الفريق عادة لتسديد الكرة قبل مخالفة الوقت؟",a:"24 ثانية"},
+    {q:"ما البطولة الأوروبية الأعلى للأندية في كرة القدم؟",a:"دوري أبطال أوروبا"},
+    {q:"في كرة القدم، ماذا تسمى التقنية المستخدمة لمراجعة قرارات الحكم بالفيديو؟",a:"VAR"},
+    {q:"في الفورمولا 1، ماذا تعني كلمة Pole Position؟",a:"مركز الانطلاق الأول"},
+    {q:"في كرة اليد، كم دقيقة مدة الشوط الواحد للرجال؟",a:"30 دقيقة"},
+    {q:"ما اسم الضربة التي تنهي النقطة مباشرة في التنس دون لمس الخصم للكرة؟",a:"إيس"},
+    {q:"في الملاكمة، ماذا يعني الفوز بالضربة القاضية الفنية؟",a:"TKO"},
+    {q:"في كرة القدم، أي مركز يرمز له غالبًا بالرقم 6 تكتيكيًا؟",a:"لاعب الارتكاز"},
+    {q:"في الشطرنج، ما الحركة الوحيدة التي يتحرك فيها قطعتان في نقلة واحدة؟",a:"التبييت"}
+  ],
+  "شعر":[
+    {q:"ما اسم علم أوزان الشعر العربي؟",a:"العروض"},
+    {q:"من صاحب البيت: إذا الشعب يومًا أراد الحياة؟",a:"أبو القاسم الشابي"},
+    {q:"ما البحر الشعري في مطلع: قفا نبك من ذكرى حبيب ومنزل؟",a:"الطويل"},
+    {q:"من شاعر لامية العرب؟",a:"الشنفرى"},
+    {q:"من صاحب قصيدة نهج البردة؟",a:"أحمد شوقي"},
+    {q:"ما المصطلح العروضي للجزء الأخير من الشطر الأول؟",a:"العروض"},
+    {q:"ما المصطلح العروضي للجزء الأخير من الشطر الثاني؟",a:"الضرب"},
+    {q:"من شاعر قصيدة إرادة الحياة؟",a:"أبو القاسم الشابي"},
+    {q:"من الشاعر العباسي صاحب لقب شاعر الفلاسفة؟",a:"أبو العلاء المعري"},
+    {q:"ما البحر الذي تفعيلته الأساسية: متفاعلن؟",a:"الكامل"}
+  ],
+  "كويت":[
+    {q:"من كتب كلمات النشيد الوطني الكويتي؟",a:"أحمد مشاري العدواني"},
+    {q:"ما اسم أول حقل نفطي اكتشف في الكويت؟",a:"حقل برقان"},
+    {q:"ما اسم أكبر جزيرة كويتية؟",a:"بوبيان"},
+    {q:"في أي عام صدر دستور الكويت؟",a:"1962"},
+    {q:"ما اسم المجلس التشريعي الذي سبق مجلس الأمة في تاريخ الكويت؟",a:"المجلس التشريعي"},
+    {q:"ما اسم بوابة الكويت القديمة التي ارتبطت بسور الكويت الثالث؟",a:"بوابة الجهراء"},
+    {q:"ما اسم المعركة التي وقعت قرب القصر الأحمر سنة 1920؟",a:"معركة الجهراء"},
+    {q:"ما اسم أول أمير للكويت بعد الاستقلال؟",a:"الشيخ عبدالله السالم الصباح"},
+    {q:"ما اسم الجزيرة الكويتية التي تضم آثارًا من العصر البرونزي وحضارة دلمون؟",a:"فيلكا"},
+    {q:"ما اسم المنظمة الخليجية التي شاركت الكويت في تأسيسها سنة 1981؟",a:"مجلس التعاون لدول الخليج العربية"}
+  ]
+};
+const defaultCats=Object.keys(pools).slice(0,6);
+const state={version:2,teamA:"الفريق الأول",teamB:"الفريق الثاني",scoreA:0,scoreB:0,seconds:45,online:true,categories:defaultCats,used:{},game:[],current:null,timer:null,paused:false};
+const net={peer:null,room:"",role:"",connections:[],connected:false,applying:false,modalOpen:false};
+const $=id=>document.getElementById(id);
+const shuffle=arr=>arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const decodeHtml=value=>{const el=document.createElement("textarea");el.innerHTML=value;return el.value};
+const youtubeSearchUrl=query=>"https://www.youtube.com/embed?listType=search&list="+encodeURIComponent(query);
+const youtubeWatchUrl=query=>"https://www.youtube.com/results?search_query="+encodeURIComponent(query);
+function roomId(code){return "sulaiman-hotel-"+String(code).trim().replace(/\D/g,"").slice(0,8)}
+function randomRoom(){return String(Math.floor(100000+Math.random()*900000))}
+function onlineLabel(text,on=false){$("onlineStatusText").textContent=text;$("onlineDot").classList.toggle("on",on)}
+function gameSnapshot(){return {state:{...state,timer:null,paused:false},onlineStatus:{...onlineStatus},modalOpen:net.modalOpen,answerShown:$("answerBox").classList.contains("show")}}
+function sendTo(conn,msg){try{if(conn&&conn.open)conn.send(msg)}catch{}}
+function broadcastGame(){if(net.applying||!net.connections.length)return;const msg={type:"sync",payload:gameSnapshot()};net.connections.forEach(conn=>sendTo(conn,msg))}
+function attachConnection(conn){net.connections=[...net.connections.filter(c=>c.peer!==conn.peer),conn];conn.on("open",()=>{net.connected=true;onlineLabel(net.role==="host"?"متصل: لاعب دخل الغرفة":"متصل بالغرفة",true);sendTo(conn,{type:"sync",payload:gameSnapshot()})});conn.on("data",msg=>{if(msg&&msg.type==="sync")applySnapshot(msg.payload);if(msg&&msg.type==="request-sync")sendTo(conn,{type:"sync",payload:gameSnapshot()})});conn.on("close",()=>{net.connections=net.connections.filter(c=>c!==conn);net.connected=net.connections.length>0;onlineLabel(net.connected?"متصل":"انقطع الاتصال",net.connected)})}
+function applySnapshot(payload){if(!payload)return;net.applying=true;Object.assign(state,payload.state||{});state.timer=null;Object.assign(onlineStatus,payload.onlineStatus||{});clearInterval(state.timer);board();if(payload.modalOpen&&state.current){$("modalCategory").textContent=state.current.source?`${state.current.catName} · ${state.current.source}`:state.current.catName;$("modalPoints").textContent=`${state.current.points} نقطة`;$("modalQuestion").textContent=state.current.q;$("answerBox").textContent=`الإجابة الصحيحة: ${state.current.a}`;$("answerBox").classList.toggle("show",!!payload.answerShown);$("pauseTimerBtn").textContent="إيقاف المؤقت";$("awardA").textContent=`${state.teamA} جاوب صح`;$("awardB").textContent=`${state.teamB} جاوب صح`;renderMedia(state.current);$("questionModal").classList.add("show");net.modalOpen=true;timer()}else{$("questionModal").classList.remove("show");net.modalOpen=false}save();net.applying=false}
+function createRoom(){if(!window.Peer){onlineLabel("مكتبة الاتصال لم تتحمل. افتح اللعبة بعد رفعها على رابط عام.");return}const code=randomRoom();net.room=code;net.role="host";$("roomCode").textContent=`كود الغرفة: ${code}`;$("roomInput").value=code;history.replaceState(null,"","#room="+code);net.peer&&net.peer.destroy();net.peer=new Peer(roomId(code));onlineLabel("جاري إنشاء الغرفة...");net.peer.on("open",()=>onlineLabel("الغرفة جاهزة، أرسل الكود للشخص الثاني"));net.peer.on("connection",attachConnection);net.peer.on("error",()=>onlineLabel("تعذر إنشاء الغرفة، جرّب كود جديد"))}
+function joinRoom(){if(!window.Peer){onlineLabel("مكتبة الاتصال لم تتحمل. افتح اللعبة بعد رفعها على رابط عام.");return}const code=$("roomInput").value.trim();if(!code){alert("اكتب كود الغرفة");return}net.room=code;net.role="guest";$("roomCode").textContent=`داخل الغرفة: ${code}`;history.replaceState(null,"","#room="+code);net.peer&&net.peer.destroy();net.peer=new Peer();onlineLabel("جاري الدخول...");net.peer.on("open",()=>{const conn=net.peer.connect(roomId(code),{reliable:true});attachConnection(conn);conn.on("open",()=>sendTo(conn,{type:"request-sync"}))});net.peer.on("error",()=>onlineLabel("تعذر الدخول. تأكد من الكود وأن صاحب الغرفة فاتح اللعبة"))}
+function save(){const clean={version:2,teamA:state.teamA,teamB:state.teamB,seconds:state.seconds,online:state.online,categories:state.categories};localStorage.setItem("sulaiman-hotel-game-state",JSON.stringify(clean))}
+function load(){try{const saved=JSON.parse(localStorage.getItem("sulaiman-hotel-game-state")||"{}");if(saved.version===2){state.teamA=saved.teamA||state.teamA;state.teamB=saved.teamB||state.teamB;state.seconds=saved.seconds||state.seconds;state.online=saved.online!==false;state.categories=saved.categories||state.categories}}catch{}}
+function pickByPoints(pool,level){const tier=pool.filter((_,i)=>Math.floor(i*values.length/pool.length)===level);return shuffle(tier.length?tier:pool)[0]}
+function buildGame(){state.game=state.categories.map(name=>{const pool=pools[name]||[];return {name,q:values.map((_,i)=>pickByPoints(pool,i))}}).filter(c=>c.q.every(Boolean))}
+async function fetchOnlineQuestion(catName,level){const category=onlineCategoryIds[catName];if(!category)return null;const difficulty=pointDifficulties[level],url=`https://opentdb.com/api.php?amount=1&type=multiple&category=${category}&difficulty=${difficulty}`,controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),3500);try{const res=await fetch(url,{signal:controller.signal});if(!res.ok)throw new Error("online source failed");const data=await res.json();const item=data.results&&data.results[0];if(!item)return null;return {q:decodeHtml(item.question),a:decodeHtml(item.correct_answer),source:"إنترنت"}}finally{clearTimeout(timeout)}}
+async function buildGameOnline(){buildGame();onlineStatus.used=0;onlineStatus.total=state.categories.filter(name=>onlineCategoryIds[name]).length*values.length;onlineStatus.failed=false;if(!state.online)return;await Promise.all(state.game.map(async cat=>{await Promise.all(cat.q.map(async (_,i)=>{try{const onlineItem=await fetchOnlineQuestion(cat.name,i);if(onlineItem){cat.q[i]=onlineItem;onlineStatus.used++}}catch{onlineStatus.failed=true}}))}))}
+function activeCats(){if(!state.game.length)buildGame();return state.game}
+function picker(){$("categoryPicker").innerHTML=Object.keys(pools).map(c=>`<label class="check"><span>${c}</span><input type="checkbox" value="${c}" ${state.categories.includes(c)?"checked":""}></label>`).join("")}
+function scores(){const total=activeCats().length*values.length,used=Object.keys(state.used).length;$("teamAName").textContent=state.teamA;$("teamBName").textContent=state.teamB;$("teamAScore").textContent=state.scoreA;$("teamBScore").textContent=state.scoreB;$("remainingCount").textContent=total-used;const source=state.online&&onlineStatus.total?` · إنترنت ${onlineStatus.used}/${onlineStatus.total}${onlineStatus.failed?" + احتياط محلي":""}`:"";$("gameStatus").textContent=(used===total&&total?"انتهت اللعبة":"اللعب مستمر")+source}
+function board(){const cs=activeCats();$("board").style.gridTemplateColumns=`repeat(${cs.length},1fr)`;$("board").innerHTML=cs.map(cat=>`<div class="cat"><div class="cat-title">${cat.name}</div><div class="qs">${values.map((v,i)=>{const k=`${cat.name}-${i}`;return `<button class="q ${state.used[k]?"used":""}" data-cat="${cat.name}" data-i="${i}" ${state.used[k]?"disabled":""}>${v}</button>`}).join("")}</div></div>`).join("");scores()}
+function openQ(catName,i){const cat=activeCats().find(c=>c.name===catName),item=cat.q[i];state.current={catName,i,...item,points:values[i],key:`${catName}-${i}`};$("modalCategory").textContent=item.source?`${catName} · ${item.source}`:catName;$("modalPoints").textContent=`${values[i]} نقطة`;$("modalQuestion").textContent=item.q;$("answerBox").textContent=`الإجابة الصحيحة: ${item.a}`;$("answerBox").classList.remove("show");$("pauseTimerBtn").textContent="إيقاف المؤقت";$("awardA").textContent=`${state.teamA} جاوب صح`;$("awardB").textContent=`${state.teamB} جاوب صح`;renderMedia(item);$("questionModal").classList.add("show");net.modalOpen=true;timer();broadcastGame()}
+function renderMedia(item){const box=$("mediaBox");box.innerHTML="";box.classList.remove("show");if(!item.youtube)return;box.classList.add("show");box.innerHTML=`<iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen src="${youtubeSearchUrl(item.youtube)}"></iframe><a target="_blank" rel="noopener" href="${youtubeWatchUrl(item.youtube)}">${onlineHint}</a>`}
+function timer(){clearInterval(state.timer);state.paused=false;let left=state.seconds*10;$("timerBar").style.transform="scaleX(1)";state.timer=setInterval(()=>{if(state.paused)return;left--;$("timerBar").style.transform=`scaleX(${Math.max(0,left/(state.seconds*10))})`;if(left<=0)clearInterval(state.timer)},100)}
+function closeQ(){clearInterval(state.timer);if(state.current)state.used[state.current.key]=true;state.current=null;net.modalOpen=false;$("questionModal").classList.remove("show");save();board();broadcastGame()}
+function award(t){if(!state.current)return;if(t==="a")state.scoreA+=state.current.points;else state.scoreB+=state.current.points;closeQ()}
+async function start(){const picked=[...document.querySelectorAll("#categoryPicker input:checked")].map(i=>i.value),count=Number($("categoryCount").value);if(picked.length<count){alert(`اختر ${count} تصنيفات على الأقل`);return}state.teamA=$("teamAInput").value.trim()||"الفريق الأول";state.teamB=$("teamBInput").value.trim()||"الفريق الثاني";state.seconds=Math.max(10,Number($("secondsInput").value)||45);state.online=$("onlineInput").checked;state.categories=shuffle(picked).slice(0,count);state.scoreA=0;state.scoreB=0;state.used={};state.current=null;net.modalOpen=false;$("setup").style.display="none";$("questionModal").classList.remove("show");$("gameStatus").textContent=state.online?"جاري تجهيز أسئلة الإنترنت...":"جاري تجهيز الأسئلة...";await buildGameOnline();save();board();broadcastGame()}
+async function refreshQuestions(){if(!confirm("تغيير الأسئلة يمسح تقدم الجولة الحالية. نكمل؟"))return;state.used={};state.scoreA=0;state.scoreB=0;state.current=null;net.modalOpen=false;$("questionModal").classList.remove("show");$("gameStatus").textContent=state.online?"جاري تجهيز أسئلة الإنترنت...":"جاري تجهيز الأسئلة...";await buildGameOnline();save();board();broadcastGame()}
+function winner(){const tie=state.scoreA===state.scoreB,n=tie?"تعادل":state.scoreA>state.scoreB?state.teamA:state.teamB;$("winnerName").textContent=n;$("winnerScore").textContent=tie?"نتيجة متعادلة":`${Math.max(state.scoreA,state.scoreB)} نقطة`;$("winnerModal").classList.add("show")}
+async function init(){load();picker();const code=location.hash.match(/room=(\d+)/)?.[1];if(code)$("roomInput").value=code;$("gameStatus").textContent=state.online?"جاري تجهيز أسئلة الإنترنت...":"جاري تجهيز الأسئلة...";await buildGameOnline();board()}
+init();
+$("setupBtn").onclick=()=>{$("teamAInput").value=state.teamA;$("teamBInput").value=state.teamB;$("secondsInput").value=state.seconds;$("onlineInput").checked=state.online;$("categoryCount").value=String(Math.min(state.categories.length,6));picker();$("setup").style.display="grid"};
+$("onlineBtn").onclick=()=>{$("onlineModal").classList.add("show")};
+$("closeOnlineBtn").onclick=()=>$("onlineModal").classList.remove("show");
+$("createRoomBtn").onclick=createRoom;
+$("joinRoomBtn").onclick=joinRoom;
+$("startBtn").onclick=start;$("refreshBtn").onclick=refreshQuestions;$("winnerBtn").onclick=winner;$("closeWinnerBtn").onclick=()=>$("winnerModal").classList.remove("show");
+$("resetBtn").onclick=async()=>{if(!confirm("تبدأ لعبة جديدة؟"))return;state.scoreA=0;state.scoreB=0;state.used={};state.current=null;net.modalOpen=false;$("questionModal").classList.remove("show");$("gameStatus").textContent=state.online?"جاري تجهيز أسئلة الإنترنت...":"جاري تجهيز الأسئلة...";await buildGameOnline();save();board();$("setup").style.display="grid";broadcastGame()};
+$("board").onclick=e=>{const b=e.target.closest(".q");if(b&&!b.classList.contains("used"))openQ(b.dataset.cat,Number(b.dataset.i))};
+$("showAnswerBtn").onclick=()=>{$("answerBox").classList.add("show");broadcastGame()};
+$("pauseTimerBtn").onclick=()=>{state.paused=!state.paused;$("pauseTimerBtn").textContent=state.paused?"تشغيل المؤقت":"إيقاف المؤقت";broadcastGame()};
+$("closeQuestionBtn").onclick=closeQ;$("awardA").onclick=()=>award("a");$("awardB").onclick=()=>award("b");
+document.querySelectorAll("[data-score]").forEach(b=>b.onclick=()=>{const d=Number(b.dataset.delta);if(b.dataset.score==="a")state.scoreA=Math.max(0,state.scoreA+d);else state.scoreB=Math.max(0,state.scoreB+d);save();scores();broadcastGame()});
+</script>
+</body>
+</html>
